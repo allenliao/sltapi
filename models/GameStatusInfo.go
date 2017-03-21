@@ -1,6 +1,6 @@
 package models
 
 type GameStatusInfo struct {
-	gameState         uint8
-	totalCreditPayout uint64
+	GameState         uint8
+	TotalCreditPayout uint64
 }

@@ -18,7 +18,7 @@ func init() {
 	result.GameInfo.MinMultiplier = 20
 
 	result.GameStatusInfo = new(GameStatusInfo)
-	result.GameStatusInfo.gameState = 1
+	result.GameStatusInfo.GameState = 1
 
 	gamePlayInfo := new(GamePlayInfo)
 
@@ -26,14 +26,16 @@ func init() {
 	//二維陣列 的宣告方法
 	reelNum := 5
 	reelSymbolNum := 4
+
 	gamePlayInfo.Result = make([][]string, reelNum)
-	for reelIdx := 0; reelIdx < reelNum; reelNum++ {
+	for reelIdx := range gamePlayInfo.Result {
 		gamePlayInfo.Result[reelIdx] = make([]string, reelSymbolNum)
-		for reelSymbolIdx := 0; reelSymbolIdx < reelSymbolNum; reelSymbolIdx++ {
+		for reelSymbolIdx := range gamePlayInfo.Result[reelIdx] {
 			gamePlayInfo.Result[reelIdx][reelSymbolIdx] = "N001"
 
 		}
 	}
+
 	//init gamePlayInfo.PayoutResultList
 	payoutResult := new(PayoutResult)
 	payoutResult.CreditPayout = 99999999999
