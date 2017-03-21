@@ -24,6 +24,7 @@ func init() {
 
 	//init gamePlayInfo.Result
 	//二維陣列 的宣告方法
+	//測試英文commit
 	reelNum := 5
 	reelSymbolNum := 4
 
