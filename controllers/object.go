@@ -1,12 +1,23 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"sltapi/models"
 
 	"github.com/astaxie/beego"
+
+	_ "github.com/go-sql-driver/mysql"
 )
+
+var db = &sql.DB{}
+var err error
+
+func init() {
+	db, err = sql.Open("mysql", "root:y0701003@tcp(localhost:3306)/slt")
+}
 
 // Operations about object
 type ObjectController struct {
@@ -34,8 +45,9 @@ func (o *ObjectController) Post() {
 // @Failure 403 :objectId is empty
 // @router /:objectId [get]
 func (o *ObjectController) Get() {
-
+	insert()
 	obb := models.GetResult()
+
 	objectId := o.Ctx.Input.Param(":objectId")
 	if objectId != "" {
 		_, err := models.GetOne(objectId)
@@ -47,6 +59,27 @@ func (o *ObjectController) Get() {
 		}
 	}
 	o.ServeJSON()
+}
+
+func insert() {
+
+	//方式4 insert
+
+	//Begin函数内部会去获取连接
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//每次循环用的都是tx内部的连接，没有新建连接，效率高
+	tx.Exec("INSERT INTOO wager(gamesn,bucode,membercode,stake_c,stake_m,payout_c,payout_c) values(?,?,?,?,?,?,?)", 1, "BU001", "AllenLiao", 1000.5, 1000.5, 1000.5, 1000.5)
+
+	//最后释放tx内部的连接
+	err2 := tx.Commit()
+	if err2 != nil {
+		fmt.Println(err)
+	}
+
 }
 
 // @Title GetAll
