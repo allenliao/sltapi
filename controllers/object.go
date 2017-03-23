@@ -1,12 +1,29 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 
 	"sltapi/models"
 
 	"github.com/astaxie/beego"
+
+	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
+
+var db = &sql.DB{}
+var err error
+
+func init() {
+	//db, err = sql.Open("mysql", "allenslt:y0701003@tcp(allen.com:3306)/slt")
+	db, err = sql.Open("mysql", "allenslt:y0701003@tcp(allen.com:3306)/slt") //家裡
+	if err != nil {
+		log.Println("DB Error:", err.Error())
+	}
+
+}
 
 // Operations about object
 type ObjectController struct {
@@ -35,8 +52,9 @@ func (o *ObjectController) Post() {
 // @Failure 403 :objectId is empty
 // @router /:objectId [get]
 func (o *ObjectController) Get() {
-
+	insert()
 	obb := models.GetResult()
+
 	objectId := o.Ctx.Input.Param(":objectId")
 	if objectId != "" {
 		_, err := models.GetOne(objectId)
@@ -48,6 +66,32 @@ func (o *ObjectController) Get() {
 		}
 	}
 	o.ServeJSON()
+}
+
+func insert() {
+
+	//方式4 insert
+
+	//Begin函数内部会去获取连接
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln("DB Error:", err.Error())
+
+	}
+
+	//每次循环用的都是tx内部的连接，没有新建连接，效率高
+	_, err3 := tx.Exec("INSERT INTO wager(gamesn,bucode,membercode,stake_c,stake_m,payout_c,payout_m) values(?,?,?,?,?,?,?)", 1, "BU001", "AllenLiao", 1000.5, 1000.5, 1000.5, 1000.5)
+	if err3 != nil {
+		log.Fatalln("DB Error:", err3.Error()) //使用Fatal會關掉整個站
+		//log.Println("DB Error:", err3.Error())
+	}
+
+	//最后释放tx内部的连接
+	err2 := tx.Commit()
+	if err2 != nil {
+		log.Println("DB Error:", err2.Error())
+	}
+
 }
 
 // @Title GetAll
