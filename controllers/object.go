@@ -24,6 +24,7 @@ type ObjectController struct {
 	beego.Controller
 }
 
+//
 // @Title Create
 // @Description create object
 // @Param	body		body 	models.Object	true		"The object content"
