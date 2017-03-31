@@ -21,6 +21,7 @@ func init() {
 }
 
 // Operations about object
+//改了Routing 和controler的名稱 要跑過Bee Run在launch才會生效
 type GameLoginController struct {
 	beego.Controller
 }
