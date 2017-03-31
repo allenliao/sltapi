@@ -28,11 +28,11 @@ func init() {
 	reelNum := 5
 	reelSymbolNum := 4
 
-	gamePlayInfo.Result = make([][]string, reelNum)
-	for reelIdx := range gamePlayInfo.Result {
-		gamePlayInfo.Result[reelIdx] = make([]string, reelSymbolNum)
-		for reelSymbolIdx := range gamePlayInfo.Result[reelIdx] {
-			gamePlayInfo.Result[reelIdx][reelSymbolIdx] = "N001"
+	gamePlayInfo.SymbolResult = make([][]string, reelNum)
+	for reelIdx := range gamePlayInfo.SymbolResult {
+		gamePlayInfo.SymbolResult[reelIdx] = make([]string, reelSymbolNum)
+		for reelSymbolIdx := range gamePlayInfo.SymbolResult[reelIdx] {
+			gamePlayInfo.SymbolResult[reelIdx][reelSymbolIdx] = "N001"
 
 		}
 	}

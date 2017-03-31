@@ -16,11 +16,12 @@ var db = &sql.DB{}
 var err error
 
 func init() {
-	db, err = sql.Open("mysql", "root:y0701003@tcp(localhost:3306)/slt")
+	//db, err = sql.Open("mysql", "root:y0701003@tcp(localhost:3306)/slt")//公司
+	db, err = sql.Open("mysql", "allenslt:y0701003@tcp(allen.com:3306)/slt")
 }
 
 // Operations about object
-type ObjectController struct {
+type GameLoginController struct {
 	beego.Controller
 }
 
@@ -31,7 +32,7 @@ type ObjectController struct {
 // @Success 200 {string} models.Object.Id
 // @Failure 403 body is empty
 // @router / [post]
-func (o *ObjectController) Post() {
+func (o *GameLoginController) Post() {
 	var ob models.Object
 	json.Unmarshal(o.Ctx.Input.RequestBody, &ob)
 	objectid := models.AddOne(ob)
@@ -45,7 +46,7 @@ func (o *ObjectController) Post() {
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
 // @router /:objectId [get]
-func (o *ObjectController) Get() {
+func (o *GameLoginController) Get() {
 	insert()
 	obb := models.GetResult()
 
@@ -90,7 +91,7 @@ func insert() {
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
 // @router / [get]
-func (o *ObjectController) GetAll() {
+func (o *GameLoginController) GetAll() {
 	obs := models.GetAll()
 	o.Data["json"] = obs
 	o.ServeJSON()
@@ -103,7 +104,7 @@ func (o *ObjectController) GetAll() {
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
 // @router /:objectId [put]
-func (o *ObjectController) Put() {
+func (o *GameLoginController) Put() {
 	objectId := o.Ctx.Input.Param(":objectId")
 	var ob models.Object
 	json.Unmarshal(o.Ctx.Input.RequestBody, &ob)
@@ -123,7 +124,7 @@ func (o *ObjectController) Put() {
 // @Success 200 {string} delete success!
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
-func (o *ObjectController) Delete() {
+func (o *GameLoginController) Delete() {
 	objectId := o.Ctx.Input.Param(":objectId")
 	models.Delete(objectId)
 	o.Data["json"] = "delete success!"
