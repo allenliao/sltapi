@@ -1,10 +1,10 @@
 package models
 
 var (
-	result *E6Result
+	result *ResultE6
 )
 
-type E6Result struct {
+type ResultE6 struct {
 	GameInfo         *GameInfo
 	GameStatusInfo   *GameStatusInfo
 	GamePlayInfoList []*GamePlayInfo
@@ -12,7 +12,7 @@ type E6Result struct {
 }
 
 func init() {
-	result = new(E6Result)
+	result = new(ResultE6)
 	result.GameInfo = new(GameInfo)
 	result.GameInfo.MaxMultiplier = 1
 	result.GameInfo.MinMultiplier = 20
@@ -48,6 +48,6 @@ func init() {
 
 }
 
-func GetResult() *E6Result {
+func GetResult() *ResultE6 {
 	return result
 }
