@@ -3,7 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"sltapi/models"
 
@@ -69,16 +69,18 @@ func insert() {
 	//Begin函数内部会去获取连接
 	tx, err := db.Begin()
 	if err != nil {
-		fmt.Println(err)
+		log.Println("DB Error:", err.Error())
 	}
 
 	//每次循环用的都是tx内部的连接，没有新建连接，效率高
-	tx.Exec("INSERT INTOO wager(gamesn,bucode,membercode,stake_c,stake_m,payout_c,payout_c) values(?,?,?,?,?,?,?)", 1, "BU001", "AllenLiao", 1000.5, 1000.5, 1000.5, 1000.5)
-
+	_, err3 := tx.Exec("INSERT INTO wager(gamesn,bucode,membercode,stake_c,stake_m,payout_c,payout_m) values(?,?,?,?,?,?,?)", 1, "BU001", "AllenLiao", 1000.5, 1000.5, 1000.5, 1000.5)
+	if err3 != nil {
+		log.Println("DB Error:", err3.Error())
+	}
 	//最后释放tx内部的连接
 	err2 := tx.Commit()
 	if err2 != nil {
-		fmt.Println(err)
+		log.Println("DB Error:", err2.Error())
 	}
 
 }
