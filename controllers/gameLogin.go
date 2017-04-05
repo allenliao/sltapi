@@ -49,7 +49,7 @@ func verifyLogin(inputObj *models.APIGameLoginInput) {
 	//尋找 Partner 驗證API URL 打過去驗證
 	requestJsonStr := fmt.Sprintf(`
 	{
-		"token":"?"
+		"Token":"%v"
 	}
 	`, inputObj.Token)
 
