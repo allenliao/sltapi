@@ -74,7 +74,12 @@ func verifyLogin(inputObj *models.APIGameLoginInput) {
 		log.Printf("verify fail rawdata: %v, Statuscode:%v, Msg:%v", string(body), outputFailObj.Statuscode, outputFailObj.Msg)
 		goutils.CheckErr(err)
 	} else {
+		//驗證成功
 		log.Printf("verify success rawdata: %v, Statuscode:%v, Membercode:%v, Balance:%v", string(body), outputSuccessObj.Statuscode, outputSuccessObj.Membercode, outputSuccessObj.Balance)
+		//GetGameInfo
+
+		//models.GetGameInfo(GameSN)
+
 	}
 
 	//var loginUrl:=

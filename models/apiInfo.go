@@ -3,6 +3,7 @@ package models
 type APIGameLoginInput struct {
 	Token  string
 	BUCode string
+	GameSN uint8
 }
 
 type APIPartnerLoginSuccessOutput struct {

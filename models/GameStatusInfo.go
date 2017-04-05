@@ -5,5 +5,4 @@ type GameStatusInfo struct {
 	TotalCreditPayout uint64 //整個gameRound的totalCreditPayout
 	CurrentMode       uint8
 	CurrentFreeSpin   uint8
-	MeetMaxPayout     bool
 }
