@@ -19,38 +19,15 @@ func init() {
 	log.Println("Hello!!!")
 }
 
-func DB_GetGameInfo(gamesn uint8) {
-	//Begin函数内部会去获取连接
-	tx, err := db.Begin()
-	goutils.CheckErr(err)
-
-	dbQueryStr := `
-	SELECT min_multiplier,
-	max_multiplier,
-	basecredit,
-	engineSN
-	FROM game WHERE gamesn=?
-	`
-	rows, err := db.Query(dbQueryStr, gamesn)
-	defer rows.Close()
-	models.CurrentBU = new(models.BUInfo)
-	//bu := *models.CurrentBU
-	for rows.Next() { //有下一筆就會一直true下去
-		//err = rows.Scan(&bu.Login_url, &bu.Placebet_url, &bu.Settlebet_url, &bu.Getbalance_url, &bu.Cancelbet_url)
-
-		err = rows.Scan(&models.CurrentBU.Login_url,
-			&models.CurrentBU.Placebet_url,
-			&models.CurrentBU.Settlebet_url,
-			&models.CurrentBU.Getbalance_url,
-			&models.CurrentBU.Cancelbet_url)
-		goutils.CheckErr(err)
-		break
+func DB_GetBUInfo(bucode string) *models.BUInfo {
+	if models.BUInfoList[bucode] == nil {
+		//取回來快取
+		models.BUInfoList[bucode] = GetBUInfo(bucode)
 	}
-	//最后释放tx内部的连接
-	err = tx.Commit()
-	goutils.CheckErr(err)
+	return models.BUInfoList[bucode]
 }
-func DB_GetBUInfo(bucode string) {
+
+func GetBUInfo(bucode string) *models.BUInfo {
 	//Begin函数内部会去获取连接
 	tx, err := db.Begin()
 	goutils.CheckErr(err)
@@ -65,20 +42,64 @@ func DB_GetBUInfo(bucode string) {
 	`
 	rows, err := db.Query(dbQueryStr, bucode)
 	defer rows.Close()
-	models.CurrentBU = new(models.BUInfo)
-	//bu := *models.CurrentBU
-	for rows.Next() { //有下一筆就會一直true下去
-		//err = rows.Scan(&bu.Login_url, &bu.Placebet_url, &bu.Settlebet_url, &bu.Getbalance_url, &bu.Cancelbet_url)
+	bUInfo := new(models.BUInfo)
 
-		err = rows.Scan(&models.CurrentBU.Login_url,
-			&models.CurrentBU.Placebet_url,
-			&models.CurrentBU.Settlebet_url,
-			&models.CurrentBU.Getbalance_url,
-			&models.CurrentBU.Cancelbet_url)
+	for rows.Next() { //有下一筆就會一直true下去
+		err = rows.Scan(&bUInfo.Login_url,
+			&bUInfo.Placebet_url,
+			&bUInfo.Settlebet_url,
+			&bUInfo.Getbalance_url,
+			&bUInfo.Cancelbet_url)
 		goutils.CheckErr(err)
 		break
 	}
 	//最后释放tx内部的连接
 	err = tx.Commit()
 	goutils.CheckErr(err)
+	return bUInfo
+
+}
+
+func DB_GetGameInfo(gameSN uint8) *models.GameInfo {
+	if models.GameInfoList[gameSN] == nil {
+		//取回來快取
+		models.GameInfoList[gameSN] = GetGameInfo(gameSN)
+	}
+	return models.GameInfoList[gameSN]
+}
+
+func GetGameInfo(gamesn uint8) *models.GameInfo {
+	//Begin函数内部会去获取连接
+	tx, err := db.Begin()
+	goutils.CheckErr(err)
+
+	dbQueryStr := `
+	SELECT min_multiplier,
+	max_multiplier,
+	basecredit,
+	engineSN
+	FROM game WHERE gamesn=?
+	`
+	rows, err := db.Query(dbQueryStr, gamesn)
+	defer rows.Close()
+	//這裡要處理 CoinSizeList 看DB怎麼 回傳兩個 result
+
+	gameInfo := new(models.GameInfo)
+	/*
+		for rows.Next() { //有下一筆就會一直true下去
+
+			err = rows.Scan(&gameInfo.Login_url,
+				&gameInfo.Placebet_url,
+				&gameInfo.Settlebet_url,
+				&gameInfo.Getbalance_url,
+				&gameInfo.Cancelbet_url)
+			goutils.CheckErr(err)
+			break
+		}
+	*/
+	//最后释放tx内部的连接
+	err = tx.Commit()
+	goutils.CheckErr(err)
+
+	return gameInfo
 }

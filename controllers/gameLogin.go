@@ -44,7 +44,8 @@ func (o *GameLoginController) Post() {
 func verifyLogin(inputObj *models.APIGameLoginInput) {
 	//取得BUInfo
 	storage.DB_GetBUInfo(inputObj.BUCode)
-	log.Println("CurrentBU.Login_url:", models.CurrentBU.Login_url)
+	currentBU := models.GetBUInfoByBuCode(inputObj.BUCode)
+	log.Println("currentBU.Login_url:", currentBU.Login_url)
 
 	//尋找 Partner 驗證API URL 打過去驗證
 	requestJsonStr := fmt.Sprintf(`
@@ -53,7 +54,7 @@ func verifyLogin(inputObj *models.APIGameLoginInput) {
 	}
 	`, inputObj.Token)
 
-	resp, err := http.Post(models.CurrentBU.Login_url,
+	resp, err := http.Post(currentBU.Login_url,
 		"application/x-www-form-urlencoded",
 		strings.NewReader(requestJsonStr))
 
@@ -78,7 +79,9 @@ func verifyLogin(inputObj *models.APIGameLoginInput) {
 		log.Printf("verify success rawdata: %v, Statuscode:%v, Membercode:%v, Balance:%v", string(body), outputSuccessObj.Statuscode, outputSuccessObj.Membercode, outputSuccessObj.Balance)
 		//GetGameInfo
 
-		//models.GetGameInfo(GameSN)
+		//回傳參考：
+		//{"Body":{"CoinSizeList":[0.01,0.02,0.05,0.10,0.25,0.50,1.0,2.0,5.0],"Currency":{"Code":"RMB","ISOCode":"CNY"},"GameToken":"e0314384-8f9a-43f3-b337-e5f8318fabd0","MaxMultiplier":10,"MinMultiplier":1,"Status":{"BaseCredit":50,"CoinSize":0.01,"CurrentMode":0,"GameState":5,"MaxPayout":0.0,"MeetMaxPayout":false,"MemberBalance":1128055.20,"MemberCredits":112805520.0,"Modes":[{"CurrentPlay":0,"CurrentPoint":0,"CurrentRound":0,"GamePlay":{"Entities":[["N006","N009","N010","N008"],["N010","N010","N003","N008"],["N005","N009","N006","N004"],["N006","N007","N003","N007"],["N006","N008","N004","N001"]],"TotalCreditPayout":0.0},"TotalPlay":0,"TotalPoint":0,"TotalRound":0,"Type":0},{"CurrentPlay":0,"CurrentPoint":0,"CurrentRound":0,"TotalPlay":0,"TotalPoint":0,"TotalRound":0,"Type":1}],"Multiplier":1,"TotalCreditPayout":0.0}},"Messages":[{"Args":["160901020300001446","5206650"],"ID":"SLT0205","Type":2}],"Status":"Success"}
+		storage.DB_GetGameInfo(inputObj.GameSN)
 
 	}
 
