@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"bytes"
 	"database/sql"
 	"log"
 	"sltapi/models"
+	"strconv"
 
 	"goutils"
 
@@ -52,22 +54,21 @@ func GetBUInfo(bucode string) *models.BUInfo {
 			&bUInfo.Getbalance_url,
 			&bUInfo.Cancelbet_url)
 		goutils.CheckErr(err)
-		break
 	}
 
 	return bUInfo
 
 }
 
-func DB_GetGameInfo(gameSN uint8) *models.GameInfo {
+func DB_GetGameInfo(bucode string, gameSN uint8) *models.GameInfo {
 	if models.GameInfoList[gameSN] == nil {
 		//取回來快取
-		models.GameInfoList[gameSN] = GetGameInfo(gameSN)
+		models.GameInfoList[gameSN] = GetGameInfo(bucode, gameSN)
 	}
 	return models.GameInfoList[gameSN]
 }
 
-func GetGameInfo(gamesn uint8) *models.GameInfo {
+func GetGameInfo(bucode string, gamesn uint8) *models.GameInfo {
 	dbQueryStr := `
 	SELECT min_multiplier,
 	max_multiplier,
@@ -91,33 +92,76 @@ func GetGameInfo(gamesn uint8) *models.GameInfo {
 			&gameInfo.BaseCredit,
 			&gameInfo.EngineSN)
 		goutils.CheckErr(err)
-		break
 	}
+
+	gameInfo.CoinSizeList = DB_GetCoinSizeListByBUGame(bucode, gamesn)
+
 	log.Printf("gamesn:%v,  MinMultiplier:%v, MaxMultiplier:%v, BaseCredit:%v, EngineSN:%v,",
 		gamesn,
 		gameInfo.MinMultiplier,
 		gameInfo.MaxMultiplier,
 		gameInfo.BaseCredit,
 		gameInfo.EngineSN)
+
 	return gameInfo
 }
 
-/*
-var BUGameCoinSizeList map[string][uint8]*[]float32 = make(map[string][uint8]*[]float32)
+var BUGameCoinSizeList map[string]*[]float32 = make(map[string]*[]float32) //map[BU001_1]*[]float32
 
-func (s *someStruct) Set(i int, k, v string) {
-    child, ok := s.nestedMap[i]
-    if !ok {
-        child = map[uint8]*[]float32 {}
-        s.nestedMap[i] = child
-    }
-    child[k] = v
+func DB_GetCoinSizeListByBUGame(bucode string, gamesn uint8) *[]float32 {
+
+	var bucode_gamesn bytes.Buffer
+	bucode_gamesn.WriteString(bucode)
+	bucode_gamesn.WriteString("_")
+	bucode_gamesn.WriteString(strconv.Itoa(int(gamesn))) //接字串
+
+	bucode_gamesnStr := bucode_gamesn.String()
+	log.Println("bucode_gamesnStr:", bucode_gamesnStr)
+
+	if BUGameCoinSizeList[bucode_gamesnStr] == nil {
+		//取回來快取
+		BUGameCoinSizeList[bucode_gamesnStr] = GetCoinSizeListByBUGame(bucode, gamesn)
+	}
+	return BUGameCoinSizeList[bucode_gamesnStr]
 }
-*/
 
-func GetBUGameCoinSizeList(bucode string, gamesn uint8) *[]float32 {
+func GetCoinSizeListByBUGame(bucode string, gamesn uint8) *[]float32 {
+
+	dbQueryStr := `
+	SELECT coinsize
+	FROM coinsize as c inner join coinsizegroup as cg on c.coinsize_groupid=cg.coinsize_groupid 
+    inner join bucoinsize as bc on bc.coinsize_groupid=cg.coinsize_groupid 
+    WHERE bc.bucode=? and bc.gamesn=?
+	`
+
+	stm, err := db.Prepare(dbQueryStr)
+	defer stm.Close()
+	goutils.CheckErr(err)
+	rows, err := stm.Query(bucode, gamesn)
+	goutils.CheckErr(err)
+	defer rows.Close()
+
+	colNames, err := rows.Columns()
+	log.Println("GetCoinSizeListByBUGame rows.colNames:", colNames)
 	//CoinSizeList  []float32
 	coinSizeList := make([]float32, 10)
+	readCols := make([]interface{}, len(colNames))
+	writeCols := make([]float32, len(colNames))
+	for i, _ := range writeCols {
+		readCols[i] = &writeCols[i]
+	}
+	for rows.Next() { //有下一筆就會一直true下去
+		err = rows.Scan(readCols...)
+		goutils.CheckErr(err)
+
+		idx := 0
+		for idy := range writeCols {
+			coinSizeList[idx] = writeCols[idy]
+			log.Println("coinsize:", coinSizeList[idx])
+			idx++
+		}
+
+	}
 
 	return &coinSizeList
 }
