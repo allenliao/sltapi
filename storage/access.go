@@ -15,7 +15,7 @@ var err error
 
 func init() {
 	//db, err = sql.Open("mysql", "root:y0701003@tcp(localhost:3306)/slt") //公司
-	db, err = sql.Open("mysql", "allenslt:y0701003@tcp(allen.com:3306)/slt")
+	db, err = sql.Open("mysql", "allenslt:y0701003@tcp(allen.com:3306)/slt") //>>公司的 VPN 要關掉才能連
 	log.Println("Hello!!!")
 }
 
@@ -29,9 +29,6 @@ func DB_GetBUInfo(bucode string) *models.BUInfo {
 
 func GetBUInfo(bucode string) *models.BUInfo {
 	//Begin函数内部会去获取连接
-	tx, err := db.Begin()
-	goutils.CheckErr(err)
-
 	dbQueryStr := `
 	SELECT login_url,
 	placebet_url,
@@ -40,7 +37,11 @@ func GetBUInfo(bucode string) *models.BUInfo {
 	cancelbet_url 
 	FROM bu WHERE bucode=?
 	`
-	rows, err := db.Query(dbQueryStr, bucode)
+	stm, err := db.Prepare(dbQueryStr)
+	defer stm.Close()
+	goutils.CheckErr(err)
+	rows, err := stm.Query(bucode)
+	goutils.CheckErr(err)
 	defer rows.Close()
 	bUInfo := new(models.BUInfo)
 
@@ -53,9 +54,7 @@ func GetBUInfo(bucode string) *models.BUInfo {
 		goutils.CheckErr(err)
 		break
 	}
-	//最后释放tx内部的连接
-	err = tx.Commit()
-	goutils.CheckErr(err)
+
 	return bUInfo
 
 }
@@ -69,10 +68,6 @@ func DB_GetGameInfo(gameSN uint8) *models.GameInfo {
 }
 
 func GetGameInfo(gamesn uint8) *models.GameInfo {
-	//Begin函数内部会去获取连接
-	tx, err := db.Begin()
-	goutils.CheckErr(err)
-
 	dbQueryStr := `
 	SELECT min_multiplier,
 	max_multiplier,
@@ -80,26 +75,49 @@ func GetGameInfo(gamesn uint8) *models.GameInfo {
 	engineSN
 	FROM game WHERE gamesn=?
 	`
-	rows, err := db.Query(dbQueryStr, gamesn)
+
+	stm, err := db.Prepare(dbQueryStr)
+	defer stm.Close()
+	goutils.CheckErr(err)
+	rows, err := stm.Query(gamesn)
+	goutils.CheckErr(err)
 	defer rows.Close()
-	//這裡要處理 CoinSizeList 看DB怎麼 回傳兩個 result
 
 	gameInfo := new(models.GameInfo)
-	/*
-		for rows.Next() { //有下一筆就會一直true下去
+	for rows.Next() { //有下一筆就會一直true下去
 
-			err = rows.Scan(&gameInfo.Login_url,
-				&gameInfo.Placebet_url,
-				&gameInfo.Settlebet_url,
-				&gameInfo.Getbalance_url,
-				&gameInfo.Cancelbet_url)
-			goutils.CheckErr(err)
-			break
-		}
-	*/
-	//最后释放tx内部的连接
-	err = tx.Commit()
-	goutils.CheckErr(err)
-
+		err = rows.Scan(&gameInfo.MinMultiplier,
+			&gameInfo.MaxMultiplier,
+			&gameInfo.BaseCredit,
+			&gameInfo.EngineSN)
+		goutils.CheckErr(err)
+		break
+	}
+	log.Printf("gamesn:%v,  MinMultiplier:%v, MaxMultiplier:%v, BaseCredit:%v, EngineSN:%v,",
+		gamesn,
+		gameInfo.MinMultiplier,
+		gameInfo.MaxMultiplier,
+		gameInfo.BaseCredit,
+		gameInfo.EngineSN)
 	return gameInfo
+}
+
+/*
+var BUGameCoinSizeList map[string][uint8]*[]float32 = make(map[string][uint8]*[]float32)
+
+func (s *someStruct) Set(i int, k, v string) {
+    child, ok := s.nestedMap[i]
+    if !ok {
+        child = map[uint8]*[]float32 {}
+        s.nestedMap[i] = child
+    }
+    child[k] = v
+}
+*/
+
+func GetBUGameCoinSizeList(bucode string, gamesn uint8) *[]float32 {
+	//CoinSizeList  []float32
+	coinSizeList := make([]float32, 10)
+
+	return &coinSizeList
 }
