@@ -37,8 +37,19 @@ func (o *GameLoginController) Post() {
 	json.Unmarshal(o.Ctx.Input.RequestBody, &inputObj) //把JSON值塞進Object去
 	//Login(驗證)
 	verifyLogin(&inputObj)
-	//o.Data["json"] = inputObj                          //輸出JSON
-	//o.ServeJSON()                                      //輸出JSON
+
+	o.Data["json"] = getOutputObj() //輸出JSON
+	o.ServeJSON()                   //輸出JSON
+}
+
+func getOutputObj() *models.APIGameLoginOutput {
+	outputObj := new(models.APIGameLoginOutput)
+	outputObj.Body = new(models.APILoginOutputBody)
+	outputObj.Body.Status = new(models.GameStatusInfo)
+	outputObj.Messages = new(models.APILoginOutputMessages)
+
+	return outputObj
+
 }
 
 func verifyLogin(inputObj *models.APIGameLoginInput) {

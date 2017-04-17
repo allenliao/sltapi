@@ -16,6 +16,24 @@ type APIPartnerLoginFailOutput struct {
 	Msg        string
 }
 
+type APIGameLoginOutput struct {
+	Body     *APILoginOutputBody
+	Messages *APILoginOutputMessages
+}
+
+type APILoginOutputBody struct {
+	CoinSizeList  *[]float32
+	MaxMultiplier uint8
+	MinMultiplier uint8
+	Status        *GameStatusInfo
+}
+
+type APILoginOutputMessages struct {
+	Args *[]string
+	ID   string
+	Type int8
+}
+
 func init() {
 
 }
